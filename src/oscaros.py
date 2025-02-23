@@ -5,6 +5,7 @@ import time
 import tkinter as tk
 from threading import Thread
 from datetime import datetime
+from tkinter import messagebox
 
 class OSCAROS:
     def __init__(self):
@@ -32,7 +33,7 @@ class OSCAROS:
         # UI setup
         self.root = tk.Tk()
         self.root.title("OSCAROS Dashboard")
-        self.root.geometry("400x450")  # Increased for more data and button
+        self.root.geometry("400x450")
         self.running = True
 
         # Labels for displaying data
@@ -54,7 +55,7 @@ class OSCAROS:
         self.can_steering_label.pack(pady=5)
 
         # Write command button
-        self.write_button = tk.Button(self.root, text="Send Test Throttle Command (ID 0x300)", command=self.send_test_command)
+        self.write_button = tk.Button(self.root, text="Send Test Throttle Command (ID 0x300)", command=self.confirm_send_command)
         self.write_button.pack(pady=10)
 
         # CAN logging setup
@@ -141,9 +142,13 @@ class OSCAROS:
             print(f"OSCAROS: Command error - {e}")
             return False
 
+    def confirm_send_command(self):
+        """Show confirmation dialog before sending the test command."""
+        if messagebox.askyesno("Confirm Action", "Send test throttle command (ID 0x300, Data 0x01)?\n\nWARNING: Only use in a safe, controlled environment!"):
+            self.send_test_command()
+
     def send_test_command(self):
         """Send a safe test command (minimal throttle tweak)."""
-        # Example: Arbitration ID 0x300, data 0x01 (minimal value, adjust based on your car)
         arbitration_id = 0x300
         data = bytearray([0x01])  # Small value to minimize risk
         success = self.send_engine_command(arbitration_id, data)
@@ -160,8 +165,8 @@ class OSCAROS:
             throttle = self.read_throttle_position()
             fuel = self.read_fuel_level()
             intake = self.read_intake_air_temp()
-            can_throttle = self.read_can_sensor(0x201)  # Throttle example
-            can_steering = self.read_can_sensor(0x202)  # Steering example
+            can_throttle = self.read_can_sensor(0x201)
+            can_steering = self.read_can_sensor(0x202)
 
             self.rpm_label.config(text=f"RPM: {rpm if rpm is not None else 'N/A'}")
             self.speed_label.config(text=f"Speed: {speed if speed is not None else 'N/A'} km/h")
